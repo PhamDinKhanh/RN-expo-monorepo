@@ -8,4 +8,4 @@ declare class DataSyncModule {
 }
 
 // This call loads the native module object from the JSI.
-export default requireNativeModule<DataSyncModule>('DataSync');
+export default requireNativeModule<DataSyncModule>('NativeDataSyncModule');

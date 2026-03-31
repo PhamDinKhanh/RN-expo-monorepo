@@ -7,4 +7,4 @@ declare class NetworkModule extends NativeModule<NetworkModuleEvents> {
 }
 
 // This call loads the native module object from the JSI.
-export default requireNativeModule<NetworkModule>('NetworkModule');
+export default requireNativeModule<NetworkModule>('NativeNetworkModule');

@@ -14,3 +14,9 @@ export {
   subscribeToNetworkChanges,
   checkIsConnected
 } from './NetworkModule'
+
+
+export {
+  checkFeatureEnabled,
+  getAllFlags
+} from './FeatureFlagModule'
