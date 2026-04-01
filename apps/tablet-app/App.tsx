@@ -3,8 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import {
-  NATIVE_PI,
-  getBatteryLevel,
+  fetchPokemonsFromAPI,
   checkIsConnected,
   subscribeToNetworkChanges,
   getAllFlags,
@@ -22,15 +21,21 @@ export default function App() {
   const [isFeatureEnabled, setIsFeatureEnabled] = useState<boolean>(false);
   const [isScanning, setIsScanning] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [responsePokemon, setResponsePokemon] = useState<string>('');
 
+   const callPokemonAPI = async () => {
+      let response = await fetchPokemonsFromAPI(10);
+      setResponsePokemon(JSON.stringify(response));
+  };
 
   useEffect(() => {
+
+    callPokemonAPI();
     handleStartNfc()
     subscribeToNetworkChanges((event) => {
       setStatusNetwork(event.isConnected ? 'connected' : 'disconnected')
       setTypeNetwork(event.type)
     });
-
     setIsFeatureEnabled(checkFeatureEnabled('enable_offline_sync'))
   }, []);
 
@@ -72,8 +77,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text>The Native PI value: {NATIVE_PI}</Text>
-      <Text>The BatteryLevel: {getBatteryLevel()}</Text>
+      <Text>respose Pokemon value: {responsePokemon}</Text>
       <Text>Check is Connect: {checkIsConnected() ? 'True' : 'False'}</Text>
       <Text>The status network: {statusNetwork}</Text>
       <Text>The type netwotk: {typeNetwork}</Text>
