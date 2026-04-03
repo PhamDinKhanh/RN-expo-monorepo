@@ -2,7 +2,6 @@ package expo.modules.datasyncnativekotlin.data.repository
 
 import expo.modules.datasyncnativekotlin.data.local.dao.PokemonDao
 import expo.modules.datasyncnativekotlin.data.mapper.toDomain
-import expo.modules.datasyncnativekotlin.data.mapper.toEntity
 import expo.modules.datasyncnativekotlin.data.remote.api.PokeApiService
 import expo.modules.datasyncnativekotlin.domain.model.PokemonPage
 import expo.modules.datasyncnativekotlin.domain.repository.PokemonRepository
@@ -28,13 +27,15 @@ class PokemonRepositoryImpl(
     }
 
     override suspend fun getPokemonList(limit: Int, offset: Int): Result<PokemonPage> {
-        runCatching {
-            val response = apiService.fetchPokemons(limit, offset)
-            if (response.isSuccessful) {
-                val dtos = response.body()?.results ?: emptyList()
-                pokemonDao.insertAll(dtos.map { it.toEntity() })
-            }
-        }
+
+        //Remove comment nếu bạn muốn lấy dữ liệu từ API -> local database -> RN
+//        runCatching {
+//            val response = apiService.fetchPokemons(limit, offset)
+//            if (response.isSuccessful) {
+//                val dtos = response.body()?.results ?: emptyList()
+//                pokemonDao.insertAll(dtos.map { it.toEntity() })
+//            }
+//        }
 
         // 2. Đọc từ "Nguồn chân lý duy nhất" (Room)
         val localPage = getLocalPokemonPage(limit, offset)
