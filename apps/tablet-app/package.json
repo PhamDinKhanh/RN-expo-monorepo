@@ -15,6 +15,7 @@
     "check:all": "pnpm type-check && pnpm lint:fix && pnpm format:fix && pnpm test:coverage"
   },
   "dependencies": {
+    "@expo/config-plugins": "^55.0.7",
     "@sw/data-sync-native-kotlin": "workspace:*",
     "@sw/ui-core": "workspace:*",
     "expo": "~55.0.8",

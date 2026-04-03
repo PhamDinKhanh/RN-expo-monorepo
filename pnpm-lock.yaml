@@ -86,6 +86,9 @@ importers:
 
   apps/tablet-app:
     dependencies:
+      '@expo/config-plugins':
+        specifier: ^55.0.7
+        version: 55.0.7
       '@sw/data-sync-native-kotlin':
         specifier: workspace:*
         version: link:../../packages/data-sync

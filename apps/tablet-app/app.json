@@ -24,6 +24,6 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.kevinpham1988.tabletapp"
     },
-    "plugins": ["expo-dev-client"]
+    "plugins": ["expo-dev-client", "./plugins/withKsp"]
   }
 }
