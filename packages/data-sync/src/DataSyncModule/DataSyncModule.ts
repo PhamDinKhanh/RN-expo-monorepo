@@ -1,11 +1,9 @@
 import { requireNativeModule } from 'expo-modules-core';
+import { PokemonPageResponse } from './DataSync.types';
 
 declare class DataSyncModule {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
-  getBatteryLevel(): number;
+  fetchPokemons(limit: number): Promise<PokemonPageResponse>;
 }
 
 // This call loads the native module object from the JSI.
-export default requireNativeModule<DataSyncModule>('DataSync');
+export default requireNativeModule<DataSyncModule>('NativeDataSyncModule');

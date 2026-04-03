@@ -1,7 +1,7 @@
 package expo.modules.datasyncnativekotlin.di.provider
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import expo.modules.datasyncnativekotlin.data.remote.NetworkClient
+import expo.modules.datasyncnativekotlin.core.network.NetworkClient
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

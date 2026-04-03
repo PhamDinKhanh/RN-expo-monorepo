@@ -1,55 +1,79 @@
 plugins {
-  id 'com.android.library'
-  id 'expo-module-gradle-plugin'
-  id 'kotlin-android'
-  id 'kotlin-kapt'
-  id ("org.jetbrains.kotlin.plugin.serialization") version "2.1.20"
+
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+    id 'kotlin-android'
+    id 'com.google.devtools.ksp'
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.20"
 }
 
 group = 'expo.modules.datasyncnativekotlin'
 version = '0.1.0'
 
 android {
-  namespace "expo.modules.datasyncnativekotlin"
-  defaultConfig {
-    versionCode 1
-    versionName "0.1.0"
-  }
-  lintOptions {
-    abortOnError false
-  }
+    namespace "expo.modules.datasyncnativekotlin"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
-  // 1. Koin cho Android
-  def koin_version = "3.5.3"
-  implementation "io.insert-koin:koin-android:$koin_version"
+    /**
+     * Koin cho Android
+     */
+    def koin_version = "4.1.0"
+    implementation "io.insert-koin:koin-android:$koin_version"
 
-  // 2. SQLCipher (Encryption)
-  implementation "androidx.sqlite:sqlite-ktx:2.4.0"
-  implementation "net.zetetic:android-database-sqlcipher:4.5.4"
+    /**
+     * SQLCipher (Encryption)
+     */
+    implementation "androidx.sqlite:sqlite-ktx:2.6.2"
+    implementation "net.zetetic:android-database-sqlcipher:4.5.4"
 
-  // 3. Room Database
-  def room_version = "2.8.4"
-  implementation "androidx.room:room-runtime:$room_version"
-  implementation "androidx.room:room-ktx:$room_version"
-  kapt "androidx.room:room-compiler:$room_version"
+    /**
+     * Room Database
+     */
+    def room_version = "2.8.4"
+    implementation "androidx.room:room-runtime:$room_version"
 
-  // 4. WorkManager
-  def work_version = "2.9.0"
-  implementation "androidx.work:work-runtime-ktx:$work_version"
+    // Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
 
-  // 3. Retrofit
-  implementation "com.squareup.retrofit2:retrofit:2.9.0"
-  implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    ksp "androidx.room:room-compiler:$room_version"
 
-  // OkHttp
-  def ok_http = "4.12.0"
-  implementation("com.squareup.okhttp3:okhttp:$ok_http")
-  implementation("com.squareup.okhttp3:logging-interceptor:$ok_http")
+    //Test helpers
+    testImplementation("androidx.room:room-testing:$room_version")
 
-  // Coroutine
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    // Paging 3 Integration
+    implementation("androidx.room:room-paging:$room_version")
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    /**
+     * WorkManager
+     */
+    def work_version = "2.11.0"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+
+    /**
+     * Retrofit
+     */
+    implementation "com.squareup.retrofit2:retrofit:3.0.0"
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+
+    /**
+     * OkHttp
+     */
+    def ok_http = "5.3.2"
+    implementation("com.squareup.okhttp3:okhttp:$ok_http")
+    implementation("com.squareup.okhttp3:logging-interceptor:$ok_http")
+
+    /**
+     * Coroutine
+     */
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }

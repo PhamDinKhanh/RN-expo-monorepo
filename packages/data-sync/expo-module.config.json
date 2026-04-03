@@ -2,8 +2,10 @@
   "platforms": ["android"],
   "android": {
     "modules": [
-      "expo.modules.datasyncnativekotlin.presentation.modules.DataSyncModule",
-      "expo.modules.datasyncnativekotlin.presentation.modules.NetworkModule"
+      "expo.modules.datasyncnativekotlin.presentation.modules.NativeDataSyncModule",
+      "expo.modules.datasyncnativekotlin.presentation.modules.NativeNetworkModule",
+      "expo.modules.datasyncnativekotlin.presentation.modules.NativeFeatureFlagModule",
+      "expo.modules.datasyncnativekotlin.presentation.modules.NativeNfcModule"
     ]
   }
 }
