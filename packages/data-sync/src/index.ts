@@ -3,8 +3,6 @@
 import { PokemonPageResponse } from './DataSyncModule/DataSync.types';
 import DataSyncModule from './DataSyncModule/DataSyncModule';
 
-
-
 export function fetchPokemonsFromAPI(limit: number): Promise<PokemonPageResponse> {
   return DataSyncModule.fetchPokemons(limit);
 }
