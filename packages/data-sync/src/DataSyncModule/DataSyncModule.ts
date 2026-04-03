@@ -1,4 +1,5 @@
 import { requireNativeModule } from 'expo-modules-core';
+
 import { PokemonPageResponse } from './DataSync.types';
 
 declare class DataSyncModule {

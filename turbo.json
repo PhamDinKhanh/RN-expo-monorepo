@@ -7,7 +7,6 @@
       "inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json"]
     },
     "lint": {
-      "dependsOn": ["^build"],
       "inputs": ["src/**/*.ts", "src/**/*.tsx", ".eslintrc.js", "package.json"],
       "outputs": [".eslintcache"]
     },

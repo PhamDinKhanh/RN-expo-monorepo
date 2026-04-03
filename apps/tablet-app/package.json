@@ -11,6 +11,8 @@
     "type-check": "tsc --noEmit --project tsconfig.json --skipLibCheck",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "validate": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test",
     "check:all": "pnpm type-check && pnpm lint:fix && pnpm format:fix && pnpm test:coverage"
   },
