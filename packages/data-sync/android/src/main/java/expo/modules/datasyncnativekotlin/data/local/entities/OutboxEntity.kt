@@ -19,7 +19,7 @@ data class OutboxEntity(
 
     // Trạng thái: PENDING, SYNCING, COMPLETED, FAILED
     val status: String = "PENDING",
-    
+
     // Số lần đã thử đồng bộ
     val retryCount: Int = 0,
 
