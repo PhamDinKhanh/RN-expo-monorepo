@@ -1,29 +1,32 @@
 package expo.modules.datasyncnativekotlin.sdk.platform.android.nfc
 
-import android.app.Activity
 import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import expo.modules.datasyncnativekotlin.sdk.api.NfcApi
+import expo.modules.datasyncnativekotlin.sdk.domain.exception.ActivityNotFoundException
 import expo.modules.datasyncnativekotlin.sdk.domain.exception.NfcNotSupportedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class AndroidNfcManagerImpl(context: Context) : NfcApi, NfcAdapter.ReaderCallback {
+class AndroidNfcManagerImpl(
+    context: Context,
+    private val currentActivityProvider: CurrentActivityProvider
+) : NfcApi, NfcAdapter.ReaderCallback {
 
     private val nfcAdapter: NfcAdapter? = NfcAdapter.getDefaultAdapter(context)
     private var onTagReadCallback: ((String) -> Unit)? = null
 
     private val mainScope = CoroutineScope(Dispatchers.Main)
 
-    override fun startSession(
-        activity: Activity,
-        onTagRead: (String) -> Unit
-    ): Boolean {
+    override fun startSession(onTagRead: (String) -> Unit): Boolean {
         if (nfcAdapter == null || !nfcAdapter.isEnabled) {
             throw NfcNotSupportedException()
         }
+
+        val activity = currentActivityProvider.currentActivity()
+            ?: throw ActivityNotFoundException()
 
         this.onTagReadCallback = onTagRead
 
@@ -42,7 +45,10 @@ class AndroidNfcManagerImpl(context: Context) : NfcApi, NfcAdapter.ReaderCallbac
         }
     }
 
-    override fun stopSession(activity: Activity) {
+    override fun stopSession() {
+        val activity = currentActivityProvider.currentActivity()
+            ?: throw ActivityNotFoundException()
+
         nfcAdapter?.disableReaderMode(activity)
         this.onTagReadCallback = null
     }

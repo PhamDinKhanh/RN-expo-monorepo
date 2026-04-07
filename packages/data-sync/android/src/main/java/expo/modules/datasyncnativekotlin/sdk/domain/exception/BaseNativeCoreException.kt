@@ -1,10 +1,8 @@
 package expo.modules.datasyncnativekotlin.sdk.domain.exception
 
-import expo.modules.kotlin.exception.CodedException
-
 /**
  * Base class for all native core exceptions in the data sync module.
- * Extends [CodedException] to provide a standardized error format for Expo modules.
+ * Stays framework-agnostic so domain and platform layers are not coupled to Expo.
  *
  * @property message The error message.
  * @property details Additional details related to the exception.
@@ -14,7 +12,7 @@ open class BaseNativeCoreException(
     val className: String? = null,
     val methodName: String? = null,
     val details: Map<String, Any>? = null
-) : CodedException(message) {
+) : RuntimeException(message) {
     override fun toString(): String {
         return "[$className.$methodName] $message | Details: $details"
     }

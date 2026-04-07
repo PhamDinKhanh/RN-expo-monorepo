@@ -1,7 +1,7 @@
 package expo.modules.datasyncnativekotlin.sdk.api
 
-import expo.modules.datasyncnativekotlin.core.network.NetworkInfo
-import expo.modules.datasyncnativekotlin.core.network.NetworkMonitor
+import expo.modules.datasyncnativekotlin.sdk.platform.android.network.NetworkInfo
+import expo.modules.datasyncnativekotlin.sdk.platform.android.network.NetworkMonitor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

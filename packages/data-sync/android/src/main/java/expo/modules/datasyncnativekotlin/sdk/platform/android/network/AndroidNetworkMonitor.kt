@@ -1,4 +1,4 @@
-package expo.modules.datasyncnativekotlin.core.network
+package expo.modules.datasyncnativekotlin.sdk.platform.android.network
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -9,7 +9,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class AndroidNetworkMonitor(private val context: Context): NetworkMonitor {
+class AndroidNetworkMonitor(private val context: Context) : NetworkMonitor {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

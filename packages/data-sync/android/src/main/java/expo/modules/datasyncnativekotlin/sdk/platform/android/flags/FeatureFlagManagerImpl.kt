@@ -1,7 +1,7 @@
 package expo.modules.datasyncnativekotlin.sdk.platform.android.flags
 
 import android.content.Context
-import expo.modules.datasyncnativekotlin.sdk.domain.manager.FeatureFlagManager
+import expo.modules.datasyncnativekotlin.sdk.application.port.FeatureFlagManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

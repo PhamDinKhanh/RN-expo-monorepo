@@ -1,1 +1,1 @@
-package expo.modules.datasyncnativekotlin.sync.worker
+package expo.modules.datasyncnativekotlin.sdk.platform.android.worker

@@ -1,8 +1,8 @@
 package expo.modules.datasyncnativekotlin.bridge.expo.modules
 
-import expo.modules.datasyncnativekotlin.bridge.expo.exception.CurrentActivityUnavailableException
 import expo.modules.datasyncnativekotlin.di.KoinInitializer
 import expo.modules.datasyncnativekotlin.sdk.api.NfcApi
+import expo.modules.datasyncnativekotlin.sdk.platform.android.nfc.CurrentActivityProvider
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import org.koin.core.component.KoinComponent
@@ -11,6 +11,7 @@ import org.koin.core.component.inject
 class NativeNfcModule : Module(), KoinComponent {
 
     private val nfcApi: NfcApi by inject()
+    private val currentActivityProvider: CurrentActivityProvider by inject()
 
     override fun definition() = ModuleDefinition {
         Name("NativeNfcModule")
@@ -19,11 +20,12 @@ class NativeNfcModule : Module(), KoinComponent {
 
         OnCreate {
             KoinInitializer.start(appContext.reactContext!!)
+            currentActivityProvider.update(appContext.currentActivity)
         }
 
         AsyncFunction("startNfcReader") {
-            val activity = appContext.currentActivity ?: throw CurrentActivityUnavailableException()
-            val result = nfcApi.startSession(activity) { tagData ->
+            currentActivityProvider.update(appContext.currentActivity)
+            val result = nfcApi.startSession { tagData ->
                 sendEvent(
                     "onNfcTagScanned", mapOf(
                         "tagId" to tagData,
@@ -36,9 +38,8 @@ class NativeNfcModule : Module(), KoinComponent {
         }
 
         Function("stopNfcReader") {
-            val activity = appContext.currentActivity ?: throw CurrentActivityUnavailableException()
-
-            nfcApi.stopSession(activity)
+            currentActivityProvider.update(appContext.currentActivity)
+            nfcApi.stopSession()
         }
     }
 }

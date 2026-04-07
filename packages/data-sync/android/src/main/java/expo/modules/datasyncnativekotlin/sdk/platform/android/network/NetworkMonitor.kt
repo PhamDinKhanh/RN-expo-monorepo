@@ -1,4 +1,4 @@
-package expo.modules.datasyncnativekotlin.core.network
+package expo.modules.datasyncnativekotlin.sdk.platform.android.network
 
 import kotlinx.coroutines.flow.Flow
 

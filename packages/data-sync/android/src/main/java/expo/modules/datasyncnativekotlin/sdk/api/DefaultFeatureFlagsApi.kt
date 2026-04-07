@@ -1,6 +1,6 @@
 package expo.modules.datasyncnativekotlin.sdk.api
 
-import expo.modules.datasyncnativekotlin.sdk.domain.manager.FeatureFlagManager
+import expo.modules.datasyncnativekotlin.sdk.application.port.FeatureFlagManager
 
 class DefaultFeatureFlagsApi(
     private val featureFlagManager: FeatureFlagManager
