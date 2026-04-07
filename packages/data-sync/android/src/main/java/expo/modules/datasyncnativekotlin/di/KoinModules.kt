@@ -11,6 +11,7 @@ import expo.modules.datasyncnativekotlin.sdk.api.DefaultNetworkApi
 import expo.modules.datasyncnativekotlin.sdk.api.FeatureFlagsApi
 import expo.modules.datasyncnativekotlin.sdk.api.NetworkApi
 import expo.modules.datasyncnativekotlin.sdk.api.NfcApi
+import expo.modules.datasyncnativekotlin.sdk.application.facade.PokemonCatalogFacade
 import expo.modules.datasyncnativekotlin.sdk.application.port.FeatureFlagManager
 import expo.modules.datasyncnativekotlin.sdk.application.usecase.GetPokemonListUseCase
 import expo.modules.datasyncnativekotlin.sdk.data.remote.api.PokemonApiService
@@ -54,5 +55,6 @@ val dataModule = module {
     }
     single<PokemonRepository> { PokemonRepositoryImpl(get(), get()) }
     factory { GetPokemonListUseCase(get()) }
+    factory { PokemonCatalogFacade(get()) }
     single<DataSyncSdk> { DefaultDataSyncSdk(get()) }
 }
