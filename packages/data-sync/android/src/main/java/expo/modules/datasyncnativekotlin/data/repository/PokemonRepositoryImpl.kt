@@ -2,12 +2,12 @@ package expo.modules.datasyncnativekotlin.data.repository
 
 import expo.modules.datasyncnativekotlin.data.local.dao.PokemonDao
 import expo.modules.datasyncnativekotlin.data.mapper.toDomain
-import expo.modules.datasyncnativekotlin.data.remote.api.PokeApiService
+import expo.modules.datasyncnativekotlin.data.remote.api.PokemonApiService
 import expo.modules.datasyncnativekotlin.domain.model.PokemonPage
 import expo.modules.datasyncnativekotlin.domain.repository.PokemonRepository
 
 class PokemonRepositoryImpl(
-    private val apiService: PokeApiService,
+    private val apiService: PokemonApiService,
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 

@@ -1,7 +1,7 @@
 package expo.modules.datasyncnativekotlin.core.network
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import expo.modules.datasyncnativekotlin.data.remote.api.PokeApiService
+import expo.modules.datasyncnativekotlin.data.remote.api.PokemonApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -32,7 +32,7 @@ object NetworkClient {
     }
 
     // Tạo instance của ApiService
-    fun providePokeApi(retrofit: Retrofit): PokeApiService {
-        return retrofit.create(PokeApiService::class.java)
+    fun providePokeApi(retrofit: Retrofit): PokemonApiService {
+        return retrofit.create(PokemonApiService::class.java)
     }
 }

@@ -1,4 +1,4 @@
-package expo.modules.datasyncnativekotlin.presentation.facades
+package expo.modules.datasyncnativekotlin.sdk.api
 
 import expo.modules.datasyncnativekotlin.domain.usecase.GetPokemonListUseCase
 import expo.modules.datasyncnativekotlin.presentation.model.PokemonJSDto
@@ -6,9 +6,11 @@ import expo.modules.datasyncnativekotlin.presentation.model.PokemonPageJSDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class PokemonFacade(private val getPokemonListUseCase: GetPokemonListUseCase) {
+class DefaultDataSyncSdk(
+    private val getPokemonListUseCase: GetPokemonListUseCase
+) : DataSyncSdk {
 
-    suspend fun fetchPokemonForJS(limit: Int): PokemonPageJSDto {
+    override suspend fun fetchPokemons(limit: Int): PokemonPageJSDto {
         return withContext(Dispatchers.IO) {
             val result = getPokemonListUseCase(limit = limit, offset = 0)
 
