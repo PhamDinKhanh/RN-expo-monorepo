@@ -1,33 +1,25 @@
 package expo.modules.datasyncnativekotlin.di.provider
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import expo.modules.datasyncnativekotlin.sdk.data.mapper.AppJson
 import expo.modules.datasyncnativekotlin.sdk.platform.android.network.NetworkClient
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.OkHttpClient.*
+import okhttp3.OkHttpClient.Builder
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "https://pokeapi.co/"
-
-private val json = Json {
-    ignoreUnknownKeys = true
-    coerceInputValues = true
-}
-
-fun provideOkHttpClient(): OkHttpClient {
-    return Builder()
+fun provideOkHttpClient(): OkHttpClient =
+    Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         // .addInterceptor(AuthInterceptor())
         .build()
-}
 
-fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-    return Retrofit.Builder()
+fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
+    Retrofit
+        .Builder()
         .baseUrl(NetworkClient.BASE_URL)
         .client(okHttpClient)
-        .addConverterFactory(NetworkClient.json.asConverterFactory("application/json".toMediaType()))
+        .addConverterFactory(AppJson.instance.asConverterFactory("application/json".toMediaType()))
         .build()
-}

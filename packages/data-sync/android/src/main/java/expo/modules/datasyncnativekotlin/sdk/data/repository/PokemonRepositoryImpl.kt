@@ -1,20 +1,27 @@
 package expo.modules.datasyncnativekotlin.sdk.data.repository
 
+import expo.modules.datasyncnativekotlin.sdk.data.local.dao.OutboxDao
 import expo.modules.datasyncnativekotlin.sdk.data.local.dao.PokemonDao
+import expo.modules.datasyncnativekotlin.sdk.data.local.entities.OutboxEntity
+import expo.modules.datasyncnativekotlin.sdk.data.local.entities.PokemonEntity
+import expo.modules.datasyncnativekotlin.sdk.data.mapper.AppJson
 import expo.modules.datasyncnativekotlin.sdk.data.mapper.toDomain
+import expo.modules.datasyncnativekotlin.sdk.data.mapper.toEntity
 import expo.modules.datasyncnativekotlin.sdk.data.remote.api.PokemonApiService
+import expo.modules.datasyncnativekotlin.sdk.data.transaction.TransactionRunner
 import expo.modules.datasyncnativekotlin.sdk.domain.model.PokemonPage
 import expo.modules.datasyncnativekotlin.sdk.domain.repository.PokemonRepository
 
 class PokemonRepositoryImpl(
+    private val pokemonDao: PokemonDao,
+    private val outboxDao: OutboxDao,
+    private val transactionRunner: TransactionRunner,
     private val apiService: PokemonApiService,
-    private val pokemonDao: PokemonDao
 ) : PokemonRepository {
-
-    // ==========================================
-    // COMMON FUNCTION: Chuyên đọc và map dữ liệu từ Room
-    // ==========================================
-    private suspend fun getLocalPokemonPage(limit: Int, offset: Int): PokemonPage {
+    private suspend fun getLocalPokemonPage(
+        limit: Int,
+        offset: Int,
+    ): PokemonPage {
         val localEntities = pokemonDao.getPokemons(limit, offset)
         val totalCount = pokemonDao.getTotalCount()
 
@@ -22,30 +29,49 @@ class PokemonRepositoryImpl(
             count = totalCount,
             next = null,
             previous = null,
-            results = localEntities.map { it.toDomain() }
+            results = localEntities.map { it.toDomain() },
         )
     }
 
-    override suspend fun getPokemonList(limit: Int, offset: Int): Result<PokemonPage> {
+    override suspend fun getPokemonList(
+        limit: Int,
+        offset: Int,
+    ): Result<PokemonPage> {
+        runCatching {
+            val response = apiService.fetchPokemons(limit, offset)
+            if (response.isSuccessful) {
+                val dtos = response.body()?.results ?: emptyList()
+                pokemonDao.upsertAll(dtos.map { it.toEntity() })
+            }
+        }.onFailure {
+            // Log lỗi nếu cần, nhưng vẫn fallback về Room
+        }
 
-        //Remove comment nếu bạn muốn lấy dữ liệu từ API -> local database -> RN
-//        runCatching {
-//            val response = apiService.fetchPokemons(limit, offset)
-//            if (response.isSuccessful) {
-//                val dtos = response.body()?.results ?: emptyList()
-//                pokemonDao.insertAll(dtos.map { it.toEntity() })
-//            }
-//        }
-
-        // 2. Đọc từ "Nguồn chân lý duy nhất" (Room)
         val localPage = getLocalPokemonPage(limit, offset)
 
-        // 3. Quyết định kết quả trả về
         return if (localPage.results.isNotEmpty()) {
             Result.success(localPage)
         } else {
-            // Chỉ báo lỗi khi cả API và DB đều không có gì
             Result.failure(Exception("No data available offline or online"))
+        }
+    }
+
+    override suspend fun savePokemonWithEvent(
+        pokemon: PokemonEntity,
+        isFromSync: Boolean,
+    ) {
+        transactionRunner.run {
+            pokemonDao.upsert(pokemon)
+
+            if (!isFromSync) {
+                val event =
+                    OutboxEntity(
+                        aggregateId = pokemon.id.toString(),
+                        eventType = "UPSERT_POKEMON",
+                        payload = AppJson.instance.encodeToString(pokemon),
+                    )
+                outboxDao.upsert(event)
+            }
         }
     }
 }
