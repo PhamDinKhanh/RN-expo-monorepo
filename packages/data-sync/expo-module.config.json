@@ -2,10 +2,10 @@
   "platforms": ["android"],
   "android": {
     "modules": [
-      "expo.modules.datasyncnativekotlin.presentation.modules.NativeDataSyncModule",
-      "expo.modules.datasyncnativekotlin.presentation.modules.NativeNetworkModule",
-      "expo.modules.datasyncnativekotlin.presentation.modules.NativeFeatureFlagModule",
-      "expo.modules.datasyncnativekotlin.presentation.modules.NativeNfcModule"
+      "expo.modules.datasyncnativekotlin.bridge.expo.modules.NativeDataSyncModule",
+      "expo.modules.datasyncnativekotlin.bridge.expo.modules.NativeNetworkModule",
+      "expo.modules.datasyncnativekotlin.bridge.expo.modules.NativeFeatureFlagModule",
+      "expo.modules.datasyncnativekotlin.bridge.expo.modules.NativeNfcModule"
     ]
   }
 }

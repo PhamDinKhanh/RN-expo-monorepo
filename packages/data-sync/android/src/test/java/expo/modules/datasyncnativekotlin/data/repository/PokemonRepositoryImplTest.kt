@@ -1,12 +1,13 @@
 package expo.modules.datasyncnativekotlin.data.repository
 
-import expo.modules.datasyncnativekotlin.data.local.dao.OutboxDao
-import expo.modules.datasyncnativekotlin.data.local.dao.PokemonDao
-import expo.modules.datasyncnativekotlin.data.local.entities.PokemonEntity
-import expo.modules.datasyncnativekotlin.data.remote.api.PokeApiService
-import expo.modules.datasyncnativekotlin.data.remote.dto.PokemonDto
-import expo.modules.datasyncnativekotlin.data.remote.dto.PokemonListResponseDto
-import expo.modules.datasyncnativekotlin.data.transaction.TransactionRunner
+import expo.modules.datasyncnativekotlin.sdk.data.local.dao.OutboxDao
+import expo.modules.datasyncnativekotlin.sdk.data.local.dao.PokemonDao
+import expo.modules.datasyncnativekotlin.sdk.data.local.entities.PokemonEntity
+import expo.modules.datasyncnativekotlin.sdk.data.remote.api.PokemonApiService
+import expo.modules.datasyncnativekotlin.sdk.data.remote.dto.PokemonDto
+import expo.modules.datasyncnativekotlin.sdk.data.remote.dto.PokemonListResponseDto
+import expo.modules.datasyncnativekotlin.sdk.data.repository.PokemonRepositoryImpl
+import expo.modules.datasyncnativekotlin.sdk.data.transaction.TransactionRunner
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -21,11 +22,10 @@ import org.junit.Test
 import retrofit2.Response
 
 class PokemonRepositoryImplTest {
-
     private lateinit var pokemonDao: PokemonDao
     private lateinit var outboxDao: OutboxDao
     private lateinit var transactionRunner: TransactionRunner
-    private lateinit var apiService: PokeApiService
+    private lateinit var apiService: PokemonApiService
     private lateinit var repository: PokemonRepositoryImpl
 
     @Before
@@ -53,84 +53,93 @@ class PokemonRepositoryImplTest {
     // ==========================================
 
     @Test
-    fun `getPokemonList - when API succeeds, should upsert to DB and return local data`() = runTest {
-        val dtos = listOf(PokemonDto("bulbasaur", "url/1"), PokemonDto("ivysaur", "url/2"))
-        val mockResponse = mockk<Response<PokemonListResponseDto>> {
-            every { isSuccessful } returns true
-            every { body() } returns PokemonListResponseDto(results = dtos)
+    fun `getPokemonList - when API succeeds, should upsert to DB and return local data`() =
+        runTest {
+            val dtos = listOf(PokemonDto("bulbasaur", "url/1"), PokemonDto("ivysaur", "url/2"))
+            val mockResponse =
+                mockk<Response<PokemonListResponseDto>> {
+                    every { isSuccessful } returns true
+                    every { body() } returns PokemonListResponseDto(results = dtos)
+                }
+            coEvery { apiService.fetchPokemons(any(), any()) } returns mockResponse
+            coEvery { pokemonDao.getPokemons(any(), any()) } returns
+                listOf(
+                    PokemonEntity(name = "bulbasaur", url = "url/1"),
+                    PokemonEntity(name = "ivysaur", url = "url/2"),
+                )
+            coEvery { pokemonDao.getTotalCount() } returns 2
+
+            val result = repository.getPokemonList(20, 0)
+
+            assertTrue(result.isSuccess)
+            assertEquals(2, result.getOrNull()?.results?.size)
+            coVerify { pokemonDao.upsertAll(any()) }
         }
-        coEvery { apiService.fetchPokemons(any(), any()) } returns mockResponse
-        coEvery { pokemonDao.getPokemons(any(), any()) } returns listOf(
-            PokemonEntity(name = "bulbasaur", url = "url/1"),
-            PokemonEntity(name = "ivysaur", url = "url/2")
-        )
-        coEvery { pokemonDao.getTotalCount() } returns 2
-
-        val result = repository.getPokemonList(20, 0)
-
-        assertTrue(result.isSuccess)
-        assertEquals(2, result.getOrNull()?.results?.size)
-        coVerify { pokemonDao.upsertAll(any()) }
-    }
 
     @Test
-    fun `getPokemonList - when API fails, should still return local data (offline fallback)`() = runTest {
-        coEvery { apiService.fetchPokemons(any(), any()) } throws RuntimeException("Network error")
-        coEvery { pokemonDao.getPokemons(any(), any()) } returns listOf(
-            PokemonEntity(name = "bulbasaur", url = "url/1")
-        )
-        coEvery { pokemonDao.getTotalCount() } returns 1
+    fun `getPokemonList - when API fails, should still return local data (offline fallback)`() =
+        runTest {
+            coEvery { apiService.fetchPokemons(any(), any()) } throws RuntimeException("Network error")
+            coEvery { pokemonDao.getPokemons(any(), any()) } returns
+                listOf(
+                    PokemonEntity(name = "bulbasaur", url = "url/1"),
+                )
+            coEvery { pokemonDao.getTotalCount() } returns 1
 
-        val result = repository.getPokemonList(20, 0)
+            val result = repository.getPokemonList(20, 0)
 
-        assertTrue(result.isSuccess)
-        assertEquals(1, result.getOrNull()?.results?.size)
-        coVerify(exactly = 0) { pokemonDao.upsertAll(any()) }
-    }
+            assertTrue(result.isSuccess)
+            assertEquals(1, result.getOrNull()?.results?.size)
+            coVerify(exactly = 0) { pokemonDao.upsertAll(any()) }
+        }
 
     @Test
-    fun `getPokemonList - when API fails and DB is empty, should return failure`() = runTest {
-        coEvery { apiService.fetchPokemons(any(), any()) } throws RuntimeException("Network error")
-        coEvery { pokemonDao.getPokemons(any(), any()) } returns emptyList()
-        coEvery { pokemonDao.getTotalCount() } returns 0
+    fun `getPokemonList - when API fails and DB is empty, should return failure`() =
+        runTest {
+            coEvery { apiService.fetchPokemons(any(), any()) } throws RuntimeException("Network error")
+            coEvery { pokemonDao.getPokemons(any(), any()) } returns emptyList()
+            coEvery { pokemonDao.getTotalCount() } returns 0
 
-        val result = repository.getPokemonList(20, 0)
+            val result = repository.getPokemonList(20, 0)
 
-        assertTrue(result.isFailure)
-    }
+            assertTrue(result.isFailure)
+        }
 
     // ==========================================
     // savePokemonWithEvent
     // ==========================================
 
     @Test
-    fun `savePokemonWithEvent - when isFromSync is false, should save pokemon and create outbox event`() = runTest {
-        val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
+    fun `savePokemonWithEvent - when isFromSync is false, should save pokemon and create outbox event`() =
+        runTest {
+            val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
 
-        repository.savePokemonWithEvent(pokemon, isFromSync = false)
+            repository.savePokemonWithEvent(pokemon, isFromSync = false)
 
-        coVerify { pokemonDao.upsert(pokemon) }
-        coVerify {
-            outboxDao.upsert(match { it.eventType == "UPSERT_POKEMON" && it.aggregateId == "1" })
+            coVerify { pokemonDao.upsert(pokemon) }
+            coVerify {
+                outboxDao.upsert(match { it.eventType == "UPSERT_POKEMON" && it.aggregateId == "1" })
+            }
         }
-    }
 
     @Test
-    fun `savePokemonWithEvent - when isFromSync is true, should save pokemon without outbox event`() = runTest {
-        val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
+    fun `savePokemonWithEvent - when isFromSync is true, should save pokemon without outbox event`() =
+        runTest {
+            val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
 
-        repository.savePokemonWithEvent(pokemon, isFromSync = true)
+            repository.savePokemonWithEvent(pokemon, isFromSync = true)
 
-        coVerify { pokemonDao.upsert(pokemon) }
-        coVerify(exactly = 0) { outboxDao.upsert(any()) }
-    }
+            coVerify { pokemonDao.upsert(pokemon) }
+            coVerify(exactly = 0) { outboxDao.upsert(any()) }
+        }
 
     @Test
-    fun `savePokemonWithEvent - should run inside a transaction`() = runTest {
-        val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
+    fun `savePokemonWithEvent - should run inside a transaction`() =
+        runTest {
+            val pokemon = PokemonEntity(id = 1, name = "bulbasaur", url = "url/1")
 
-        repository.savePokemonWithEvent(pokemon, isFromSync = false)
+            repository.savePokemonWithEvent(pokemon, isFromSync = false)
 
-        coVerify { transactionRunner.run(any()) }
-    }
+            coVerify { transactionRunner.run(any()) }
+        }
 }

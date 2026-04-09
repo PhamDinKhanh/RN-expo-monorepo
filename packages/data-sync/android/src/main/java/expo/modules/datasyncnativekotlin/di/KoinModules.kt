@@ -1,51 +1,63 @@
 package expo.modules.datasyncnativekotlin.di
 
-import expo.modules.datasyncnativekotlin.core.network.AndroidNetworkMonitor
-import expo.modules.datasyncnativekotlin.core.network.NetworkMonitor
-import expo.modules.datasyncnativekotlin.data.manager.AndroidNfcManagerImpl
-import expo.modules.datasyncnativekotlin.data.manager.FeatureFlagManagerImpl
-import expo.modules.datasyncnativekotlin.data.remote.api.PokeApiService
-import expo.modules.datasyncnativekotlin.data.repository.PokemonRepositoryImpl
-import expo.modules.datasyncnativekotlin.data.transaction.RoomTransactionRunner
-import expo.modules.datasyncnativekotlin.data.transaction.TransactionRunner
 import expo.modules.datasyncnativekotlin.di.provider.provideOkHttpClient
 import expo.modules.datasyncnativekotlin.di.provider.provideOutboxDao
 import expo.modules.datasyncnativekotlin.di.provider.providePokemonDao
 import expo.modules.datasyncnativekotlin.di.provider.provideRetrofit
 import expo.modules.datasyncnativekotlin.di.provider.provideRoomDatabase
-import expo.modules.datasyncnativekotlin.domain.manager.AndroidNfcManager
-import expo.modules.datasyncnativekotlin.domain.manager.FeatureFlagManager
-import expo.modules.datasyncnativekotlin.domain.repository.PokemonRepository
-import expo.modules.datasyncnativekotlin.domain.usecase.GetPokemonListUseCase
-import expo.modules.datasyncnativekotlin.presentation.facades.PokemonFacade
+import expo.modules.datasyncnativekotlin.sdk.api.DataSyncConfig
+import expo.modules.datasyncnativekotlin.sdk.api.DataSyncSdk
+import expo.modules.datasyncnativekotlin.sdk.api.DefaultDataSyncSdk
+import expo.modules.datasyncnativekotlin.sdk.api.DefaultFeatureFlagsApi
+import expo.modules.datasyncnativekotlin.sdk.api.DefaultNetworkApi
+import expo.modules.datasyncnativekotlin.sdk.api.FeatureFlagsApi
+import expo.modules.datasyncnativekotlin.sdk.api.NetworkApi
+import expo.modules.datasyncnativekotlin.sdk.api.NfcApi
+import expo.modules.datasyncnativekotlin.sdk.application.facade.PokemonCatalogFacade
+import expo.modules.datasyncnativekotlin.sdk.application.port.FeatureFlagManager
+import expo.modules.datasyncnativekotlin.sdk.application.usecase.GetPokemonListUseCase
+import expo.modules.datasyncnativekotlin.sdk.data.remote.api.PokemonApiService
+import expo.modules.datasyncnativekotlin.sdk.data.repository.PokemonRepositoryImpl
+import expo.modules.datasyncnativekotlin.sdk.data.transaction.RoomTransactionRunner
+import expo.modules.datasyncnativekotlin.sdk.data.transaction.TransactionRunner
+import expo.modules.datasyncnativekotlin.sdk.domain.repository.PokemonRepository
+import expo.modules.datasyncnativekotlin.sdk.platform.android.flags.FeatureFlagManagerImpl
+import expo.modules.datasyncnativekotlin.sdk.platform.android.network.AndroidNetworkMonitor
+import expo.modules.datasyncnativekotlin.sdk.platform.android.network.NetworkMonitor
+import expo.modules.datasyncnativekotlin.sdk.platform.android.nfc.AndroidNfcManagerImpl
+import expo.modules.datasyncnativekotlin.sdk.platform.android.nfc.CurrentActivityProvider
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
-val coreModule = module {
-    // 1. FeatureFlag Module
-    single<FeatureFlagManager> { FeatureFlagManagerImpl(androidContext()) }
+fun coreModule(config: DataSyncConfig) =
+    module {
+        single<DataSyncConfig> { config }
 
-    // 2. Database Module
-    single { provideRoomDatabase(androidContext()) }
-    single { providePokemonDao(get()) }
-    single { provideOutboxDao(get()) }
-    single<TransactionRunner> { RoomTransactionRunner(get()) }
+        single<FeatureFlagManager> { FeatureFlagManagerImpl() }
+        single<FeatureFlagsApi> { DefaultFeatureFlagsApi(get()) }
 
-    // 3. Network Module
-    single<NetworkMonitor> { AndroidNetworkMonitor(androidContext()) }
-    single { provideOkHttpClient() }
-    single { provideRetrofit(get()) }
+        single { provideRoomDatabase(androidContext(), get()) }
+        single { providePokemonDao(get()) }
+        single { provideOutboxDao(get()) }
+        single<TransactionRunner> { RoomTransactionRunner(get()) }
 
-    // 4. NFC Module
-    single<AndroidNfcManager> { AndroidNfcManagerImpl(androidContext()) }
-}
+        single<NetworkMonitor> { AndroidNetworkMonitor(androidContext()) }
+        single<NetworkApi> { DefaultNetworkApi(get()) }
+        single { provideOkHttpClient(get()) }
+        single { provideRetrofit(get(), get()) }
 
-val dataModule = module {
-    single<PokeApiService> {
-        get<Retrofit>().create(PokeApiService::class.java)
+        single { CurrentActivityProvider(androidContext()) }
+        single<NfcApi> { AndroidNfcManagerImpl(androidContext(), get()) }
     }
-    single<PokemonRepository> { PokemonRepositoryImpl(get(), get(), get(), get()) }
-    factory { GetPokemonListUseCase(get()) }
-    single { PokemonFacade(get()) }
-}
+
+val dataModule =
+    module {
+        single<PokemonApiService> {
+            get<Retrofit>().create(PokemonApiService::class.java)
+        }
+        single<PokemonRepository> { PokemonRepositoryImpl(get(), get(), get(), get()) }
+        factory { GetPokemonListUseCase(get()) }
+        factory { PokemonCatalogFacade(get()) }
+        single<DataSyncSdk> { DefaultDataSyncSdk(get(), get(), get(), get()) }
+    }
